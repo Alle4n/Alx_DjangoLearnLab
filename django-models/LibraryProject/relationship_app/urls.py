@@ -1,7 +1,7 @@
-from django.shortcuts import render
-from .models import Book
+from django.urls import path
+from . import views
 
-# Function-based view: List all books
-def list_books(request):
-    books = Book.objects.all()  # ✅ This is the required query
-    return render(request, 'list_books.html', {'books': books})
+urlpatterns = [
+    path('books/', views.list_books, name='list_books'),
+    path('library/<int:pk>/', views.LibraryDetailView.as_view(), name='library_detail'),
+]
