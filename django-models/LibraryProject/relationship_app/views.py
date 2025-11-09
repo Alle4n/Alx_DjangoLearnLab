@@ -3,8 +3,8 @@ from django.views.generic.detail import DetailView
 from .models import Library, Book, UserProfile
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.contrib.auth.decorators import user_passes_test, permission_required
-from .forms import BookForm  # Make sure you create this form in forms.py
+from django.contrib.auth.decorators import user_passes_test, permission_required 
+from .forms import BookForm
 
 # -------------------------------
 # Books and Library Views
