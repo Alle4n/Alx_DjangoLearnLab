@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
-from .views import list_books  # required literal import for ALX checker
+from .views import list_books  # explicit import for ALX
 from . import views
 
 urlpatterns = [
