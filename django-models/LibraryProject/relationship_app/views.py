@@ -1,9 +1,9 @@
-from django.shortcuts import render, get_object_or_404
-from django.views.generic.detail import DetailView 
-from .models import Library, Book 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic.detail import DetailView
+from .models import Library, Book
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.shortcuts import redirect
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm  # ✅ explicit import
 
 # Function-based view: List all books
 def list_books(request):
@@ -15,7 +15,6 @@ class LibraryDetailView(DetailView):
     model = Library
     template_name = 'relationship_app/library_detail.html'
     context_object_name = 'library'
-
 
 def user_login(request):
     if request.method == 'POST':
