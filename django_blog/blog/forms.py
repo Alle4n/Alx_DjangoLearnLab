@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.forms import ModelForm
 from .models import Post, Comment
-from taggit.forms import TagWidget  # <-- add for tagging support
+from taggit.forms import TagWidget  # <-- for tag input
 
 # ================================
 # USER REGISTRATION FORM
@@ -16,7 +16,7 @@ class RegisterForm(UserCreationForm):
         fields = ["username", "email", "password1", "password2"]
 
 # ================================
-# POST FORM (with Tags)
+# POST FORM (with Tag Support)
 # ================================
 class PostForm(ModelForm):
     class Meta:
