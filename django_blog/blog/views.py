@@ -1,24 +1,13 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import get_object_or_404
-from django.views.generic import UpdateView, DeleteView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-
-from django.views.generic import (
-    ListView,
-    DetailView,
-    CreateView,
-    UpdateView,
-    DeleteView
-)
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 
 from .forms import RegisterForm, PostForm, CommentForm
 from .models import Post, Comment
-
 
 # ================================
 # AUTHENTICATION VIEWS
@@ -39,14 +28,12 @@ def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
             return redirect("post-list")
         else:
             messages.error(request, "Invalid username or password")
-
     return render(request, "blog/login.html")
 
 
@@ -62,7 +49,6 @@ def profile_view(request):
         request.user.email = request.POST.get("email")
         request.user.save()
         messages.success(request, "Profile updated.")
-
     return render(request, "blog/profile.html")
 
 
@@ -79,6 +65,11 @@ class PostListView(ListView):
 class PostDetailView(DetailView):
     model = Post
     template_name = "blog/post_detail.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["form"] = CommentForm()  # Pass form for adding comments
+        return ctx
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -125,7 +116,9 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == post.author
 
 
-# Create Comment (handled on Post Detail page)
+# ================================
+# COMMENT VIEWS
+# ================================
 @login_required
 def add_comment(request, pk):
     post = get_object_or_404(Post, pk=pk)
@@ -142,14 +135,10 @@ def add_comment(request, pk):
     return render(request, "blog/comment_form.html", {"form": form, "action": "Add Comment"})
 
 
-# Update Comment
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Comment
     form_class = CommentForm
     template_name = "blog/comment_form.html"
-
-    def form_valid(self, form):
-        return super().form_valid(form)
 
     def test_func(self):
         comment = self.get_object()
@@ -159,7 +148,6 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.object.post.get_absolute_url()
 
 
-# Delete Comment
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Comment
     template_name = "blog/comment_confirm_delete.html"
