@@ -9,6 +9,9 @@ from django.urls import reverse_lazy
 from .forms import RegisterForm, PostForm, CommentForm
 from .models import Post, Comment
 
+from django.db.models import Q
+from taggit.models import Tag
+
 # ================================
 # AUTHENTICATION VIEWS
 # ================================
@@ -162,3 +165,39 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def get_success_url(self):
         return self.object.post.get_absolute_url()
+
+
+# ------------------------------
+# Search view
+# ------------------------------
+class PostSearchView(ListView):
+    model = Post
+    template_name = "blog/post_search.html"
+    context_object_name = "posts"
+
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        if query:
+            return Post.objects.filter(
+                Q(title__icontains=query) |
+                Q(content__icontains=query) |
+                Q(tags__name__icontains=query)
+            ).distinct()
+        return Post.objects.none()
+
+# ------------------------------
+# Tag filter view
+# ------------------------------
+class PostByTagListView(ListView):
+    model = Post
+    template_name = "blog/post_list.html"
+    context_object_name = "posts"
+
+    def get_queryset(self):
+        self.tag_name = self.kwargs.get("tag_name")
+        return Post.objects.filter(tags__name__iexact=self.tag_name)
+    
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["tag_name"] = self.tag_name
+        return ctx

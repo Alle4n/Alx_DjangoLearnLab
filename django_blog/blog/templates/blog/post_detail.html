@@ -5,9 +5,19 @@
 <p>{{ object.content }}</p>
 <small>By {{ object.author }} on {{ object.published_date|date:"M d, Y H:i" }}</small>
 
+<!-- Display Tags -->
+<p>
+  Tags:
+  {% for tag in object.tags.all %}
+    <a href="{% url 'posts-by-tag' tag.name %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+  {% empty %}
+    No tags.
+  {% endfor %}
+</p>
+
 {% if user == object.author %}
     <br><br>
-    <a href="{% url 'post-update' object.pk %}">Edit</a>
+    <a href="{% url 'post-update' object.pk %}">Edit</a> |
     <a href="{% url 'post-delete' object.pk %}">Delete</a>
 {% endif %}
 
@@ -40,5 +50,13 @@
 {% else %}
     <p><a href="{% url 'login' %}">Login</a> to post a comment.</p>
 {% endif %}
+
+<hr>
+
+<!-- Search Bar -->
+<form method="get" action="{% url 'post-search' %}">
+    <input type="text" name="q" placeholder="Search posts..." required>
+    <button type="submit">Search</button>
+</form>
 
 {% endblock %}
