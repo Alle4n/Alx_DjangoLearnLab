@@ -21,9 +21,10 @@ class RegisterForm(UserCreationForm):
 class PostForm(ModelForm):
     class Meta:
         model = Post
-        fields = ["title", "content", "tags"]  # include tags
+        fields = ['title', 'video_URL', 'content_text', 'score', 'tags']
         widgets = {
-            "tags": TagWidget(attrs={'placeholder': 'Add tags separated by commas'})
+            'content_text': forms.Textarea(attrs={'cols': 80, 'rows': 20}),
+            'tags': TagWidget(),  # <-- Tag input widget
         }
 
 # ================================
