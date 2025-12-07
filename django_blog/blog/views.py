@@ -68,7 +68,7 @@ class PostDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["form"] = CommentForm()  # Pass form for adding comments
+        ctx["form"] = CommentForm()  # form for adding a comment
         return ctx
 
 
@@ -119,20 +119,24 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 # ================================
 # COMMENT VIEWS
 # ================================
-@login_required
-def add_comment(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.author = request.user
-            comment.save()
-            return redirect("post-detail", pk=post.pk)
-    else:
-        form = CommentForm()
-    return render(request, "blog/comment_form.html", {"form": form, "action": "Add Comment"})
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = "blog/comment_form.html"
+
+    def form_valid(self, form):
+        post_pk = self.kwargs.get("pk")
+        form.instance.post = get_object_or_404(Post, pk=post_pk)
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.object.post.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["action"] = "Add Comment"
+        return ctx
 
 
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
