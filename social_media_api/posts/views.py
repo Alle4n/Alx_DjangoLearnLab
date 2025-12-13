@@ -1,12 +1,12 @@
 from rest_framework import viewsets, permissions, filters
-from .models import Post, Comment
-from .serializers import PostSerializer, CommentSerializer
-from .permissions import IsOwnerOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Post
-from .serializers import PostSerializer
+
+from .models import Post, Comment
+from .serializers import PostSerializer, CommentSerializer
+from .permissions import IsOwnerOrReadOnly
+
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -32,7 +32,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     ]
 
     def get_queryset(self):
-        # Still correctly filters comments per post
         return Comment.objects.filter(post_id=self.kwargs["post_pk"])
 
     def perform_create(self, serializer):
@@ -42,16 +41,13 @@ class CommentViewSet(viewsets.ModelViewSet):
         )
 
 
-
 class FeedView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         following_users = request.user.following.all()
 
-        posts = Post.objects.filter(
-            author__in=following_users
-        ).order_by("-created_at")
+        posts = Post.objects.filter(author__in=following_users).order_by("-created_at")
 
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data)
