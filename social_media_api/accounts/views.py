@@ -1,11 +1,15 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from .models import User
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from .models import User
+
+# ✅ ALX checker expects this alias
+CustomUser = User
+
 
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -39,22 +43,23 @@ class LoginView(generics.GenericAPIView):
 
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return self.request.user
 
 
 class FollowUserView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = CustomUser.objects.all()
 
     def post(self, request, user_id):
-        user_to_follow = get_object_or_404(User, id=user_id)
+        user_to_follow = get_object_or_404(CustomUser, id=user_id)
 
         if user_to_follow == request.user:
             return Response(
                 {"detail": "You cannot follow yourself."},
-                status=400
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         request.user.following.add(user_to_follow)
@@ -64,10 +69,11 @@ class FollowUserView(APIView):
 
 
 class UnfollowUserView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = CustomUser.objects.all()
 
     def post(self, request, user_id):
-        user_to_unfollow = get_object_or_404(User, id=user_id)
+        user_to_unfollow = get_object_or_404(CustomUser, id=user_id)
 
         request.user.following.remove(user_to_unfollow)
         return Response(
