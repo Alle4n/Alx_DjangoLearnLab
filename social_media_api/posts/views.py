@@ -2,7 +2,11 @@ from rest_framework import viewsets, permissions, filters
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from .permissions import IsOwnerOrReadOnly
-
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Post
+from .serializers import PostSerializer
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -20,7 +24,6 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    # ✅ REQUIRED for ALX checker
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [
@@ -37,3 +40,18 @@ class CommentViewSet(viewsets.ModelViewSet):
             author=self.request.user,
             post_id=self.kwargs["post_pk"]
         )
+
+
+
+class FeedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        following_users = request.user.following.all()
+
+        posts = Post.objects.filter(
+            author__in=following_users
+        ).order_by("-created_at")
+
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)

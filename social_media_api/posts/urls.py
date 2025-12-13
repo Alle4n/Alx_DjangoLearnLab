@@ -1,6 +1,8 @@
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedDefaultRouter
-from .views import PostViewSet, CommentViewSet
+from .views import PostViewSet, CommentViewSet, FeedView
+from django.urls import path
+
 
 router = DefaultRouter()
 router.register("posts", PostViewSet, basename="posts")
@@ -17,3 +19,8 @@ posts_router.register(
 )
 
 urlpatterns = router.urls + posts_router.urls
+
+
+urlpatterns += [
+    path("feed/", FeedView.as_view(), name="user-feed"),
+]
